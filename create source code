@@ -1,0 +1,60 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+df = pd.read_csv('/content/Amazon Sale Report.csv')
+print(df.head())
+
+print(df.isnull().sum())
+df = df.drop_duplicates()
+df['Qty'] = df['Qty'].fillna(0)
+df['Amount'] = df['Amount'].fillna(0)
+df['Date'] = pd.to_datetime(df['Date'], format='%m-%d-%y')
+df['Revenue'] = df['Qty'] * df['Amount']
+
+
+total_revenue = df['Revenue'].sum()
+print(f"Total Revenue: ${total_revenue:.2f}")
+total_orders = df['Order ID'].nunique()
+print(f"Total Orders: {total_orders}")
+total_quantity = df['Qty'].sum()
+print(f"Total Products Sold: {total_quantity}")
+category_revenue = df.groupby('Category')['Revenue'].sum().sort_values(ascending=False)
+print(category_revenue)
+
+df['YearMonth'] = df['Date'].dt.to_period('M')
+monthly_revenue = df.groupby('YearMonth')['Revenue'].sum()
+plt.figure(figsize=(10,5))
+monthly_revenue.plot(marker='o')
+plt.title('Monthly Revenue Trend')
+plt.xlabel('Month')
+plt.ylabel('Revenue')
+plt.grid(True)
+plt.show()
+
+top_products = df.groupby('Style')['Revenue'].sum().sort_values(ascending=False).head(10)
+plt.figure(figsize=(10,6))
+sns.barplot(x=top_products.values, y=top_products.index, hue=top_products.index, palette='viridis', legend=False)
+plt.title('Top 10 Products by Revenue')
+plt.xlabel('Revenue')
+plt.ylabel('Product Style')
+plt.show()
+
+region_revenue = df.groupby('ship-state')['Revenue'].sum().sort_values(ascending=False)
+plt.figure(figsize=(10,6))
+sns.barplot(x=region_revenue.index, y=region_revenue.values, hue=region_revenue.index, palette='coolwarm', legend=False)
+plt.title('Revenue by State')
+plt.xlabel('State')
+plt.ylabel('Revenue')
+plt.xticks(rotation=90)
+plt.tight_layout()
+plt.show()
+
+top_products = df.groupby('Style')['Revenue'].sum().sort_values(ascending=False).head(10)
+plt.figure(figsize=(10,6))
+sns.barplot(x=top_products.values, y=top_products.index, hue=top_products.index, palette='Spectral', legend=False)
+plt.title('Top 10 Products by Revenue', fontsize=16, weight='bold')
+plt.xlabel('Revenue ($)')
+plt.ylabel('Product Style')
+plt.show()
